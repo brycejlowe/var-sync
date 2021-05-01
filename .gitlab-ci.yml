@@ -1,0 +1,30 @@
+stages:
+  - Update Variables
+  - Distribute Variables
+
+Update ECR Docker Config:
+  stage: Update Variables
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+  variables:
+    # otherwise you need less installed: https://github.com/aws/aws-cli/issues/5343
+    AWS_PAGER: ''
+  script:
+    - |
+      echo "Validating Environment"
+      [ -z "$GITLAB_API_TOKEN" ] && echo "Missing GITLAB_API_TOKEN Variable" && exit 1
+    - |
+      echo "Refreshing ECR Docker Login"
+      ECR_RESULT=`aws ecr get-authorization-token --query 'authorizationData[*]'`
+    - |
+      echo "Building Gitlab Variable Request"
+      GITLAB_VARIABLE_JSON=`echo $ECR_RESULT | jq -r 'reduce .[] as $i ({}; .[$i.proxyEndpoint] = {"auth": $i.authorizationToken}) | {"auths": .}'`
+      # variable isn't specified, we need to create a new one
+      if [ -z "$DOCKER_AUTH_CONFIG" ]; then
+        echo "Adding DOCKER_AUTH_CONFIG Pipeline Variable"
+        curl -f -X POST -s --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables" --data 'key=DOCKER_AUTH_CONFIG' --data "value=$GITLAB_VARIABLE_JSON" >/dev/null
+      else
+        echo "Updating DOCKER_AUTH_CONFIG Pipeline Variable"
+        curl -f -X PUT -s --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables/DOCKER_AUTH_CONFIG" --data "value=$GITLAB_VARIABLE_JSON" >/dev/null
+      fi
+    - |
+      echo "Successfully Updated ECR Docker Login"
