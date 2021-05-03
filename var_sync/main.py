@@ -125,7 +125,7 @@ def var_sync(args: Dict) -> int:
                 f"Failed Updating {result.variable.project} Variable {result.variable.key}: {result.message}"
             )
 
-    logger.info(f"Finished Variable Sync")
+    logger.info(f"Finished {CLI_NAME}")
 
     return 1 if update_errors else 0
 
