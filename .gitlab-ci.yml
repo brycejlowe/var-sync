@@ -66,4 +66,4 @@ Install & Run:
       pip install dist/*.whl
     - |
       echo "Executing var-sync $(cat ./version)"
-      var-sync --projects ./projects.yml --api-uri ${CI_SERVER_URL} --api-token ${GITLAB_API_TOKEN}
+      var-sync --projects ./projects.yml --api-url ${CI_SERVER_URL} --api-token ${GITLAB_API_TOKEN}

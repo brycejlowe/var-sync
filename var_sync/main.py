@@ -142,5 +142,7 @@ def main():
     script_args.add_argument('--max-threads', metavar='10',
                              help='maximum number of threads to use for gitlab operations', default=10, type=int)
 
+    parsed_script_args = script_args.parse_args()
+
     logger.info(f"Starting {CLI_NAME}")
-    exit(var_sync(vars(script_args.parse_args())))
+    exit(var_sync(vars(parsed_script_args)))
