@@ -1,6 +1,12 @@
 stages:
   - Update Variables
   - Distribute Variables
+  - Poetry Build
+  - Run
+
+variables:
+  POETRY_VERSION: '1.1.6'
+  PYTHON_VERSION: '3.9'
 
 Update ECR Docker Config:
   stage: Update Variables
@@ -28,3 +34,35 @@ Update ECR Docker Config:
       fi
     - |
       echo "Successfully Updated ECR Docker Login"
+
+.poetry_image:
+  image: python:$PYTHON_VERSION
+  before_script:
+    - echo "Fetching & Installing Poetry"
+    - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - $([ ! -z $POETRY_VERSION ] && echo "--version $POETRY_VERSION")
+    - echo "Configuring Current Shell"
+    - source $HOME/.poetry/env
+
+Build with Poetry:
+  stage: Poetry Build
+  extends:
+    - .poetry_image
+  script:
+    - echo "Building Project"
+    - poetry build
+    - echo "Extracting Version"
+    - poetry version -s > ./version
+  artifacts:
+    paths:
+      - dist/*
+      - ./version
+
+Install & Run:
+  stage: Run
+  script:
+    - |
+      echo "Installing Build"
+      pip install dist/*.whl
+    - |
+      echo "Executing var-sync $(cat ./version)"
+      var-sync --projects ./projects.yml --api-uri ${CI_SERVER_URL} --api-token ${GITLAB_API_TOKEN}

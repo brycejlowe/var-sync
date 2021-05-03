@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "var-sync"
+version = "0.1.0"
+description = ""
+authors = ["Bryce Lowe <brycel@zillowgroup.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+PyYAML = "^5.4.1"
+requests = "^2.25.1"
+requests-toolbelt = "^0.9.1"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+var-sync = "var_sync.main:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
