@@ -59,6 +59,7 @@ Build with Poetry:
 
 Install & Run:
   stage: Run
+  image: python:$PYTHON_VERSION
   script:
     - |
       echo "Installing Build"
