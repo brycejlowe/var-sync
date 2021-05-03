@@ -62,8 +62,8 @@ Install & Run:
   image: python:$PYTHON_VERSION
   script:
     - |
-      echo "Installing Build"
+      echo "Installing Project"
       pip install dist/*.whl
     - |
-      echo "Executing var-sync $(cat ./version)"
+      echo "Executing Project"
       var-sync --projects ./projects.yml --api-url ${CI_SERVER_URL} --api-token ${GITLAB_API_TOKEN}
