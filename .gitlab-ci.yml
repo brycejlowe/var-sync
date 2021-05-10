@@ -19,7 +19,7 @@ Create New Keypair:
   script:
     - |
       echo "Extracting Existing Key"
-      echo ${AWS_ACCESS_KEY_ID} > ${CI_PROJECT_PATH}/to-revoke
+      echo ${AWS_ACCESS_KEY_ID} > ${CI_PROJECT_DIR}/to-revoke
     - |
       echo "Creating Access Key"
       IAM_CREDENTIALS=`aws iam create-access-key --query 'AccessKey.[AccessKeyId,SecretAccessKey]' --output text`
@@ -31,7 +31,7 @@ Create New Keypair:
       curl -f -X PUT -s --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables/AWS_SECRET_ACCESS_KEY" --data "value=$SECRET_ACCESS_KEY" >/dev/null
   artifacts:
     paths:
-      - ${CI_PROJECT_PATH}/to-revoke
+      - ${CI_PROJECT_DIR}/to-revoke
 
 Update ECR Docker Config:
   stage: Update Variables
@@ -102,4 +102,4 @@ Revoke Old Keypair:
   script:
     - |
       echo "Revoking Access Key"
-      aws iam delete-access-key --access-key-id $(cat ${CI_PROJECT_PATH}/to-revoke)
+      aws iam delete-access-key --access-key-id $(cat ${CI_PROJECT_DIR}/to-revoke)
