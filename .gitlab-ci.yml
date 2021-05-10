@@ -1,12 +1,37 @@
 stages:
+  - Create Credentials
   - Update Variables
   - Distribute Variables
   - Poetry Build
   - Run
+  - Revoke Credentials
 
 variables:
   POETRY_VERSION: '1.1.6'
   PYTHON_VERSION: '3.9'
+
+Create New Keypair:
+  stage: Create Credentials
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+  variables:
+    # otherwise you need less installed: https://github.com/aws/aws-cli/issues/5343
+    AWS_PAGER: ''
+  script:
+    - |
+      echo "Extracting Existing Key"
+      echo ${AWS_ACCESS_KEY_ID} > ${CI_PROJECT_PATH}/to-revoke
+    - |
+      echo "Creating Access Key"
+      IAM_CREDENTIALS=`aws iam create-access-key --query 'AccessKey.[AccessKeyId,SecretAccessKey]' --output text`
+    - |
+      echo "Updating Access Key"
+      ACCESS_KEY_ID=$(echo ${IAM_CREDENTIALS} | awk '{ print $1 }')
+      curl -f -X PUT -s --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables/AWS_ACCESS_KEY_ID" --data "value=$ACCESS_KEY_ID" >/dev/null
+      SECRET_ACCESS_KEY=$(echo ${IAM_CREDENTIALS} | awk '{ print $2 }')
+      curl -f -X PUT -s --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables/AWS_SECRET_ACCESS_KEY" --data "value=$SECRET_ACCESS_KEY" >/dev/null
+  artifacts:
+    paths:
+      - ${CI_PROJECT_PATH}/to-revoke
 
 Update ECR Docker Config:
   stage: Update Variables
@@ -67,3 +92,14 @@ Install & Run:
     - |
       echo "Executing Project"
       var-sync --projects ./projects.yml --api-url ${CI_SERVER_URL} --api-token ${GITLAB_API_TOKEN}
+
+Revoke Old Keypair:
+  stage: Revoke Credentials
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+  variables:
+    # otherwise you need less installed: https://github.com/aws/aws-cli/issues/5343
+    AWS_PAGER: ''
+  script:
+    - |
+      echo "Revoking Access Key"
+      aws iam delete-access-key --access-key-id $(cat ${CI_PROJECT_PATH}/to-revoke)
