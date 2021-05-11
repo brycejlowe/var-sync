@@ -6,3 +6,4 @@ projects:
     AWS_SECRET_ACCESS_KEY: AWS_SECRET_ACCESS_KEY
   brycel/docker-builder: *all
   brycel/test-pipeline: *all
+  brycel/zg-k8s-playground-1: *all
