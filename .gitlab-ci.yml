@@ -10,7 +10,7 @@ variables:
   POETRY_VERSION: '1.1.6'
   PYTHON_VERSION: '3.9'
 
-Create New Keypair:
+.Create New Keypair:
   stage: Create Credentials
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   variables:
@@ -93,7 +93,7 @@ Install & Run:
       echo "Executing Project"
       var-sync --projects ./projects.yml --api-url ${CI_SERVER_URL} --api-token ${GITLAB_API_TOKEN}
 
-Revoke Old Keypair:
+.Revoke Old Keypair:
   stage: Revoke Credentials
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   variables:
