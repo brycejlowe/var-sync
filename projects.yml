@@ -8,3 +8,4 @@ projects:
   brycel/elasticsearch-logging: *all
   brycel/test-pipeline: *all
   brycel/zg-k8s-playground-1: *all
+  brycel/brycel-fluentd: *all
